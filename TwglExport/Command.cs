@@ -15,14 +15,39 @@ namespace TwglExport
   [Transaction( TransactionMode.ReadOnly )]
   public class Command : IExternalCommand
   {
+    /// <summary>
+    /// If true, individual curved surface facets are
+    /// retained, otherwise (default) smoothing is 
+    /// applied.
+    /// </summary>
+    static public bool RetainCurvedSurfaceFacets = false;
+
+    // Unit conversion factors.
+
     const double _mm_per_inch = 25.4;
     const double _inch_per_foot = 12;
     const double _foot_to_mm = _inch_per_foot * _mm_per_inch;
 
+    /// <summary>
+    /// Convert the given value from 
+    /// imperial feet to metric millimetres.
+    /// </summary>
     static int FootToMm( double a )
     {
       double one_half = a > 0 ? 0.5 : -0.5;
-      return (int) (a * _foot_to_mm + one_half);
+      return (int) ( a * _foot_to_mm + one_half );
+    }
+
+    /// <summary>
+    /// Return the maximum absolute coordinate 
+    /// of the given point or vector.
+    /// </summary>
+    static double MaxCoord( XYZ a )
+    {
+      double d = Math.Abs( a.X );
+      d = Math.Max( d, Math.Abs( a.Y ) );
+      d = Math.Max( d, Math.Abs( a.Z ) );
+      return d;
     }
 
     public Result Execute(
@@ -65,7 +90,7 @@ namespace TwglExport
       List<int> faceVertices = new List<int>();
       List<double> faceNormals = new List<double>();
       int[] triangleIndices = new int[3];
-
+      XYZ[] triangleCorners = new XYZ[3];
 
       foreach( GeometryObject obj in geo )
       {
@@ -91,12 +116,14 @@ namespace TwglExport
 
             // A vertex may be reused several times with 
             // different normals for different faces, so 
-            // we cannot precalculate normals.
+            // we cannot precalculate normals per vertex.
             //List<double> normals = new List<double>( 3 * nVertices );
 
             foreach( XYZ v in vertices )
             {
-              // Translate to bounding box midpoint.
+              // Translate the entire element geometry
+              // to the bounding box midpoint and scale 
+              // to metric millimetres.
 
               XYZ p = v - pmid;
 
@@ -104,21 +131,27 @@ namespace TwglExport
               vertexCoordsMm.Add( FootToMm( p.Y ) );
               vertexCoordsMm.Add( FootToMm( p.Z ) );
             }
-            
+
             for( int i = 0; i < nTriangles; ++i )
             {
               MeshTriangle triangle = mesh.get_Triangle( i );
 
               for( int j = 0; j < 3; ++j )
               {
-                triangleIndices[j] = (int) triangle.get_Index( j );
+                int k = (int) triangle.get_Index( j );
+                triangleIndices[j] = k;
+                triangleCorners[j] = vertices[k];
               }
 
-              XYZ p = vertices[triangleIndices[0]];
-              XYZ q = vertices[triangleIndices[1]];
-              XYZ r = vertices[triangleIndices[2]];
+              // Calculate constant triangle facet normal.
 
-              XYZ normal = ( q - p ).CrossProduct( r - p ).Normalize();
+              XYZ v = triangleCorners[1]
+                - triangleCorners[0];
+              XYZ w = triangleCorners[2]
+                - triangleCorners[0];
+              XYZ triangleNormal = v
+                .CrossProduct( w )
+                .Normalize();
 
               for( int j = 0; j < 3; ++j )
               {
@@ -139,31 +172,47 @@ namespace TwglExport
                 faceVertices.Add( vertexCoordsMm[i3 + 1] );
                 faceVertices.Add( vertexCoordsMm[i3 + 2] );
                 faceVertices.Add( vertexCoordsMm[i3] );
-                faceNormals.Add( normal.Y );
-                faceNormals.Add( normal.Z );
-                faceNormals.Add( normal.X );
+
+                if( RetainCurvedSurfaceFacets )
+                {
+                  faceNormals.Add( triangleNormal.Y );
+                  faceNormals.Add( triangleNormal.Z );
+                  faceNormals.Add( triangleNormal.X );
+                }
+                else
+                {
+                  UV uv = face.Project(
+                    triangleCorners[j] ).UVPoint;
+
+                  XYZ normal = face.ComputeNormal( uv );
+
+                  faceNormals.Add( normal.Y );
+                  faceNormals.Add( normal.Z );
+                  faceNormals.Add( normal.X );
+                }
               }
             }
           }
 
-          // Scale and translate the vertices to a 
-          // [-1,1] cube centered around the origin.
+          // Scale the vertices to a [-1,1] cube 
+          // centered around the origin. Translation
+          // to the origin was already performed above.
 
-          double scale = 2.0 / FootToMm( vsize.GetLength() );
+          double scale = 2.0 / FootToMm( MaxCoord( vsize ) );
 
-          Debug.Print( "position: [{0}],", 
-            string.Join( ", ", 
-              faceVertices.ConvertAll<string>( 
+          Debug.Print( "position: [{0}],",
+            string.Join( ", ",
+              faceVertices.ConvertAll<string>(
                 i => ( i * scale ).ToString( "0.##" ) ) ) );
 
-          Debug.Print( "normal: [{0}],", 
-            string.Join( ", ", 
-              faceNormals.ConvertAll<string>( 
+          Debug.Print( "normal: [{0}],",
+            string.Join( ", ",
+              faceNormals.ConvertAll<string>(
                 f => f.ToString( "0.##" ) ) ) );
 
-          Debug.Print( "indices: [{0}],", 
-            string.Join( ", ", 
-              faceIndices.ConvertAll<string>( 
+          Debug.Print( "indices: [{0}],",
+            string.Join( ", ",
+              faceIndices.ConvertAll<string>(
                 i => i.ToString() ) ) );
         }
       }
