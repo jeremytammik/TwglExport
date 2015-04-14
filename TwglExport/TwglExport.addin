@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Text>TWGL Export</Text>
+    <Description>Export an element to the Tiny WebGL helper Library</Description>
+    <Assembly>TwglExport.dll</Assembly>
+    <FullClassName>TwglExport.Command</FullClassName>
+    <ClientId>ae85024d-e3cd-4548-8c27-ddcee3f83887</ClientId>
+    <VendorId>TBC_</VendorId>
+    <VendorDescription>The Building Coder, http://thebuildingcoder.typepad.com</VendorDescription>
+  </AddIn>
+</RevitAddIns>
