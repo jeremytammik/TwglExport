@@ -1,6 +1,8 @@
 # TwglExport
 
-Revit add-in to export element geometry to WebGL, specifically TWGL.
+Revit add-in to export element geometry to
+[WebGL](https://www.khronos.org/webgl), specifically
+[TWGL](http://twgljs.org).
 
 For a detailed description, please refer to
 [The Building Coder](http://thebuildingcoder.typepad.com) and
