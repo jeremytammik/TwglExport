@@ -1,7 +1,8 @@
 # TwglExport
 
 A tiny Revit add-in to export element geometry to
-[WebGL](https://www.khronos.org/webgl).
+[WebGL](https://www.khronos.org/webgl), e.g., the
+[NodeWebGL](https://github.com/jeremytammik/NodeWebGL) minimal Node.js WebGL viewer app.
 
 Tiny twice over, at both ends: a small and simple Revit add-in making use of a Node.js WebGL server implemented using the Tiny WebGL library
 [TWGL](http://twgljs.org).
@@ -13,10 +14,11 @@ For a detailed description, please refer to
 
 ## Todo
 
-Use a
+- Use a
 [custom exporter](http://thebuildingcoder.typepad.com/blog/about-the-author.html#5.1)
 instead of traversing the element geometry.
 
+- Implement support to directly drive the [NodeWebGL](https://github.com/jeremytammik/NodeWebGL) REST API.
 
 ## Author
 
