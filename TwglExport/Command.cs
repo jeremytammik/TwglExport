@@ -200,20 +200,21 @@ namespace TwglExport
 
           double scale = 2.0 / FootToMm( MaxCoord( vsize ) );
 
-          Debug.Print( "position: [{0}],",
-            string.Join( ", ",
-              faceVertices.ConvertAll<string>(
-                i => ( i * scale ).ToString( "0.##" ) ) ) );
+          string sposition = string.Join( ", ",
+            faceVertices.ConvertAll<string>(
+              i => ( i * scale ).ToString( "0.##" ) ) );
 
-          Debug.Print( "normal: [{0}],",
-            string.Join( ", ",
-              faceNormals.ConvertAll<string>(
-                f => f.ToString( "0.##" ) ) ) );
+          string snormal = string.Join( ", ",
+            faceNormals.ConvertAll<string>(
+              f => f.ToString( "0.##" ) ) );
 
-          Debug.Print( "indices: [{0}],",
-            string.Join( ", ",
-              faceIndices.ConvertAll<string>(
-                i => i.ToString() ) ) );
+          string sindices = string.Join( ", ",
+            faceIndices.ConvertAll<string>(
+              i => i.ToString() ) );
+
+          Debug.Print( "position: [{0}],", sposition );
+          Debug.Print( "normal: [{0}],", snormal );
+          Debug.Print( "indices: [{0}],", sindices );
         }
       }
       return Result.Succeeded;

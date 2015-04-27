@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle( "TwglExport" )]
-[assembly: AssemblyDescription( "Revit add-in to export element geometry to WebGL, specifically TWGL" )]
+[assembly: AssemblyDescription( "Revit add-in to export 3D element geometry to Node.js WebGL viewer" )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "Autodesk Inc." )]
 [assembly: AssemblyProduct( "TwglExport" )]
@@ -35,6 +35,7 @@ using System.Runtime.InteropServices;
 //
 // 2015-04-13 2015.0.0.0 initial implementation
 // 2015-04-14 2015.0.0.1 added RetainCurvedSurfaceFacets and implemented face smoothing 
+// 2015-04-27 2015.0.0.2 started putting together JSON string to directly launch the viewer
 //
-[assembly: AssemblyVersion( "2015.0.0.1" )]
-[assembly: AssemblyFileVersion( "2015.0.0.1" )]
+[assembly: AssemblyVersion( "2015.0.0.2" )]
+[assembly: AssemblyFileVersion( "2015.0.0.2" )]
