@@ -8,6 +8,9 @@ using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using System.Net;
+using System.IO;
+using System.Text;
 #endregion
 
 namespace TwglExport
@@ -48,6 +51,65 @@ namespace TwglExport
       d = Math.Max( d, Math.Abs( a.Y ) );
       d = Math.Max( d, Math.Abs( a.Z ) );
       return d;
+    }
+
+    /// <summary>
+    /// Invoke the node.js WebGL viewer web server.
+    /// Use a local or global base URL and an HTTP POST
+    /// request passing the 3D geometry data as body.
+    /// </summary>
+    void DisplayWgl( string json_geometry_data )
+    {
+      bool local = true;
+
+      string base_url = local
+        ? "http://127.0.0.1:5000"
+        : "https://shielded-hamlet-1585.herokuapp.com";
+
+      string api_route = "api/v2";
+
+      string uri = base_url + "/" + api_route;
+
+      HttpWebRequest req = WebRequest.Create( uri ) as HttpWebRequest;
+
+      //req.Credentials = new NetworkCredential( user, password );
+      //req.ProtocolVersion = HttpVersion.Version10;
+      req.KeepAlive = false;
+      req.Method = WebRequestMethods.Http.Post;
+      //req.ContentType = "application/x-www-form-urlencoded";
+
+      //string postData = "foo=bar";
+
+      //StreamWriter postStream = new StreamWriter( req.GetRequestStream(), System.Text.Encoding.ASCII );
+      //postStream.Write( json_geometry_data );
+      //postStream.Close();
+
+      // Turn our request string into a byte stream.
+
+      byte[] postBytes = Encoding.UTF8.GetBytes(json_geometry_data);
+
+      req.ContentLength = postBytes.Length;
+
+      // Specify content type.
+
+      req.ContentType = "application/json; charset=UTF-8"; // or just "text/json"?
+      req.Accept = "application/json";
+      req.ContentLength = postBytes.Length;
+      //req.CookieContainer = Cookies;
+      //req.UserAgent = currentUserAgent;
+      Stream requestStream = req.GetRequestStream();
+      requestStream.Write(postBytes, 0, postBytes.Length);
+      requestStream.Close();
+
+      HttpWebResponse res = req.GetResponse() as HttpWebResponse;
+
+      string result;
+
+      using( StreamReader reader = new StreamReader( 
+        res.GetResponseStream() ) )
+      {
+        result = reader.ReadToEnd();
+      }
     }
 
     public Result Execute(
@@ -212,9 +274,13 @@ namespace TwglExport
             faceIndices.ConvertAll<string>(
               i => i.ToString() ) );
 
+          string json_geometry_data = "";
+
           Debug.Print( "position: [{0}],", sposition );
           Debug.Print( "normal: [{0}],", snormal );
           Debug.Print( "indices: [{0}],", sindices );
+
+          DisplayWgl( json_geometry_data );
         }
       }
       return Result.Succeeded;
