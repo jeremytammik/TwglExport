@@ -72,17 +72,8 @@ namespace TwglExport
 
       HttpWebRequest req = WebRequest.Create( uri ) as HttpWebRequest;
 
-      //req.Credentials = new NetworkCredential( user, password );
-      //req.ProtocolVersion = HttpVersion.Version10;
       req.KeepAlive = false;
       req.Method = WebRequestMethods.Http.Post;
-      //req.ContentType = "application/x-www-form-urlencoded";
-
-      //string postData = "foo=bar";
-
-      //StreamWriter postStream = new StreamWriter( req.GetRequestStream(), System.Text.Encoding.ASCII );
-      //postStream.Write( json_geometry_data );
-      //postStream.Close();
 
       // Turn our request string into a byte stream.
 
@@ -95,8 +86,7 @@ namespace TwglExport
       req.ContentType = "application/json; charset=UTF-8"; // or just "text/json"?
       req.Accept = "application/json";
       req.ContentLength = postBytes.Length;
-      //req.CookieContainer = Cookies;
-      //req.UserAgent = currentUserAgent;
+
       Stream requestStream = req.GetRequestStream();
       requestStream.Write( postBytes, 0, postBytes.Length );
       requestStream.Close();
@@ -110,13 +100,16 @@ namespace TwglExport
       {
         result = reader.ReadToEnd();
       }
+      
       string filename = Path.GetTempFileName();
       filename = Path.ChangeExtension( filename, "html" );
+      
       using( StreamWriter writer = File.CreateText( filename ) )
       {
         writer.Write( result );
         writer.Close();
       }
+      
       System.Diagnostics.Process.Start( filename );
     }
 
