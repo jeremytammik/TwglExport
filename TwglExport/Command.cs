@@ -86,7 +86,7 @@ namespace TwglExport
 
       // Turn our request string into a byte stream.
 
-      byte[] postBytes = Encoding.UTF8.GetBytes(json_geometry_data);
+      byte[] postBytes = Encoding.UTF8.GetBytes( json_geometry_data );
 
       req.ContentLength = postBytes.Length;
 
@@ -98,18 +98,26 @@ namespace TwglExport
       //req.CookieContainer = Cookies;
       //req.UserAgent = currentUserAgent;
       Stream requestStream = req.GetRequestStream();
-      requestStream.Write(postBytes, 0, postBytes.Length);
+      requestStream.Write( postBytes, 0, postBytes.Length );
       requestStream.Close();
 
       HttpWebResponse res = req.GetResponse() as HttpWebResponse;
 
       string result;
 
-      using( StreamReader reader = new StreamReader( 
+      using( StreamReader reader = new StreamReader(
         res.GetResponseStream() ) )
       {
         result = reader.ReadToEnd();
       }
+      string filename = Path.GetTempFileName();
+      filename = Path.ChangeExtension( filename, "html" );
+      using( StreamWriter writer = File.CreateText( filename ) )
+      {
+        writer.Write( result );
+        writer.Close();
+      }
+      System.Diagnostics.Process.Start( filename );
     }
 
     public Result Execute(
@@ -274,11 +282,21 @@ namespace TwglExport
             faceIndices.ConvertAll<string>(
               i => i.ToString() ) );
 
-          string json_geometry_data = "";
-
           Debug.Print( "position: [{0}],", sposition );
           Debug.Print( "normal: [{0}],", snormal );
           Debug.Print( "indices: [{0}],", sindices );
+
+          //string json_geometry_data = string.Format(
+          //  "{ \"position\": [{0}],\n\"normal\": [{1}], \"indices\": [{2}] }",
+          //  sposition, snormal, sindices );
+
+          string json_geometry_data =
+            "{ \"position\": [" + sposition
+            + "],\n\"normal\": [" + snormal
+            + "],\n\"indices\": [" + sindices
+            + "] }";
+
+          Debug.Print( "json: " + json_geometry_data );
 
           DisplayWgl( json_geometry_data );
         }
