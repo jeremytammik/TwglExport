@@ -19,6 +19,12 @@ namespace TwglExport
   public class Command : IExternalCommand
   {
     /// <summary>
+    /// Toggle between a local server and
+    /// a remote Heroku-hosted one.
+    /// </summary>
+    static public bool UseLocalServer = false;
+
+    /// <summary>
     /// If true, individual curved surface facets are
     /// retained, otherwise (default) smoothing is 
     /// applied.
@@ -60,11 +66,9 @@ namespace TwglExport
     /// </summary>
     void DisplayWgl( string json_geometry_data )
     {
-      bool local = true;
-
-      string base_url = local
+      string base_url = UseLocalServer
         ? "http://127.0.0.1:5000"
-        : "https://shielded-hamlet-1585.herokuapp.com";
+        : "https://nameless-harbor-7576.herokuapp.com";
 
       string api_route = "api/v2";
 
@@ -100,16 +104,16 @@ namespace TwglExport
       {
         result = reader.ReadToEnd();
       }
-      
+
       string filename = Path.GetTempFileName();
       filename = Path.ChangeExtension( filename, "html" );
-      
+
       using( StreamWriter writer = File.CreateText( filename ) )
       {
         writer.Write( result );
         writer.Close();
       }
-      
+
       System.Diagnostics.Process.Start( filename );
     }
 

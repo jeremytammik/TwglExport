@@ -36,7 +36,8 @@ using System.Runtime.InteropServices;
 // 2015-04-13 2015.0.0.0 initial implementation
 // 2015-04-14 2015.0.0.1 added RetainCurvedSurfaceFacets and implemented face smoothing 
 // 2015-04-27 2015.0.0.2 started putting together JSON string to directly launch the viewer
-// 2015-04-27 2015.0.0.3 invoke node.js WebGL viewer web server directly via HTTP POST request
+// 2015-04-28 2015.0.0.2 invoke node.js WebGL viewer web server directly via HTTP POST request
+// 2015-04-29 2015.0.0.3 invoke remote node.js WebGL viewer web server directly via HTTP POST request
 //
 [assembly: AssemblyVersion( "2015.0.0.3" )]
 [assembly: AssemblyFileVersion( "2015.0.0.3" )]
