@@ -2,15 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Text;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
-using System.Net;
-using System.IO;
-using System.Text;
 #endregion
 
 namespace TwglExport
@@ -30,34 +30,6 @@ namespace TwglExport
     /// applied.
     /// </summary>
     static public bool RetainCurvedSurfaceFacets = false;
-
-    // Unit conversion factors.
-
-    const double _mm_per_inch = 25.4;
-    const double _inch_per_foot = 12;
-    const double _foot_to_mm = _inch_per_foot * _mm_per_inch;
-
-    /// <summary>
-    /// Convert the given value from 
-    /// imperial feet to metric millimetres.
-    /// </summary>
-    static int FootToMm( double a )
-    {
-      double one_half = a > 0 ? 0.5 : -0.5;
-      return (int) ( a * _foot_to_mm + one_half );
-    }
-
-    /// <summary>
-    /// Return the maximum absolute coordinate 
-    /// of the given point or vector.
-    /// </summary>
-    static double MaxCoord( XYZ a )
-    {
-      double d = Math.Abs( a.X );
-      d = Math.Max( d, Math.Abs( a.Y ) );
-      d = Math.Max( d, Math.Abs( a.Z ) );
-      return d;
-    }
 
     /// <summary>
     /// Invoke the node.js WebGL viewer web server.
@@ -194,9 +166,9 @@ namespace TwglExport
 
               XYZ p = v - pmid;
 
-              vertexCoordsMm.Add( FootToMm( p.X ) );
-              vertexCoordsMm.Add( FootToMm( p.Y ) );
-              vertexCoordsMm.Add( FootToMm( p.Z ) );
+              vertexCoordsMm.Add( Util.FootToMm( p.X ) );
+              vertexCoordsMm.Add( Util.FootToMm( p.Y ) );
+              vertexCoordsMm.Add( Util.FootToMm( p.Z ) );
             }
 
             for( int i = 0; i < nTriangles; ++i )
@@ -265,7 +237,7 @@ namespace TwglExport
           // centered around the origin. Translation
           // to the origin was already performed above.
 
-          double scale = 2.0 / FootToMm( MaxCoord( vsize ) );
+          double scale = 2.0 / Util.FootToMm( Util.MaxCoord( vsize ) );
 
           string sposition = string.Join( ", ",
             faceVertices.ConvertAll<string>(

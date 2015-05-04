@@ -53,10 +53,13 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TwglExportContext.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TwglExport.addin" />
