@@ -18,7 +18,8 @@ For a detailed description, please refer to
 [custom exporter](http://thebuildingcoder.typepad.com/blog/about-the-author.html#5.1)
 instead of traversing the element geometry.
 
-- Implement support to directly drive the [NodeWebGL](https://github.com/jeremytammik/NodeWebGL) REST API.
+- Implement support to directly drive the [NodeWebGL](https://github.com/jeremytammik/NodeWebGL) REST API -- 
+Initial solution completed with [release 2015.0.0.3](https://github.com/jeremytammik/TwglExport/releases/tag/2015.0.0.3).
 
 ## Author
 
