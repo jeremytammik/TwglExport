@@ -38,6 +38,9 @@ using System.Runtime.InteropServices;
 // 2015-04-27 2015.0.0.2 started putting together JSON string to directly launch the viewer
 // 2015-04-28 2015.0.0.2 invoke node.js WebGL viewer web server directly via HTTP POST request
 // 2015-04-29 2015.0.0.3 invoke remote node.js WebGL viewer web server directly via HTTP POST request
+// 2015-05-04 2015.0.0.4 implemented a skeleton custom exporter context
+// 2015-05-04 2015.0.0.5 implemented new command to drive custom exporter
+// 2015-05-05 2015.0.0.6 implemented and tested custom exporter, HTML is correctly generated, but HTML viewing of the final result is failing due to COR policy
 //
-[assembly: AssemblyVersion( "2015.0.0.3" )]
-[assembly: AssemblyFileVersion( "2015.0.0.3" )]
+[assembly: AssemblyVersion( "2015.0.0.6" )]
+[assembly: AssemblyFileVersion( "2015.0.0.6" )]

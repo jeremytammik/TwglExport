@@ -51,153 +51,68 @@ namespace TwglExport
       XYZ vsize = pmax - pmin;
       XYZ pmid = pmin + 0.5 * vsize;
 
-      Options opt = new Options();
-      GeometryElement geo = e.get_Geometry( opt );
-
-      List<int> faceIndices = new List<int>();
-      List<int> faceVertices = new List<int>();
-      List<double> faceNormals = new List<double>();
-      int[] triangleIndices = new int[3];
-      XYZ[] triangleCorners = new XYZ[3];
-
-      foreach( GeometryObject obj in geo )
+      using( TransactionGroup tg 
+        = new TransactionGroup( doc ) )
       {
-        Solid solid = obj as Solid;
+        // Create 3D view
 
-        if( solid != null && 0 < solid.Faces.Size )
+        ViewFamilyType viewType
+          = new FilteredElementCollector( doc )
+            .OfClass( typeof( ViewFamilyType ) )
+            .OfType<ViewFamilyType>()
+            .FirstOrDefault( x => x.ViewFamily 
+              == ViewFamily.ThreeDimensional );
+
+        View3D view;
+
+        using( Transaction t = new Transaction( doc ) )
         {
-          faceIndices.Clear();
-          faceVertices.Clear();
-          faceNormals.Clear();
+          t.Start( "Create 3D View" );
 
-          foreach( Face face in solid.Faces )
-          {
-            Mesh mesh = face.Triangulate();
+          view = View3D.CreateIsometric(
+            doc, viewType.Id );
 
-            int nTriangles = mesh.NumTriangles;
+          t.Commit();
 
-            IList<XYZ> vertices = mesh.Vertices;
+          view.IsolateElementTemporary( e.Id );
 
-            int nVertices = vertices.Count;
+          t.Commit();
 
-            List<int> vertexCoordsMm = new List<int>( 3 * nVertices );
+          TwglExportContext context 
+            = new TwglExportContext( doc, pmid );
 
-            // A vertex may be reused several times with 
-            // different normals for different faces, so 
-            // we cannot precalculate normals per vertex.
-            //List<double> normals = new List<double>( 3 * nVertices );
+          CustomExporter exporter 
+            = new CustomExporter( doc, context );
 
-            foreach( XYZ v in vertices )
-            {
-              // Translate the entire element geometry
-              // to the bounding box midpoint and scale 
-              // to metric millimetres.
+          // Note: Excluding faces just suppresses the 
+          // OnFaceBegin calls, not the actual processing 
+          // of face tessellation. Meshes of the faces 
+          // will still be received by the context.
 
-              XYZ p = v - pmid;
+          exporter.IncludeFaces = false;
 
-              vertexCoordsMm.Add( Util.FootToMm( p.X ) );
-              vertexCoordsMm.Add( Util.FootToMm( p.Y ) );
-              vertexCoordsMm.Add( Util.FootToMm( p.Z ) );
-            }
+          exporter.ShouldStopOnError = false;
 
-            for( int i = 0; i < nTriangles; ++i )
-            {
-              MeshTriangle triangle = mesh.get_Triangle( i );
-
-              for( int j = 0; j < 3; ++j )
-              {
-                int k = (int) triangle.get_Index( j );
-                triangleIndices[j] = k;
-                triangleCorners[j] = vertices[k];
-              }
-
-              // Calculate constant triangle facet normal.
-
-              XYZ v = triangleCorners[1]
-                - triangleCorners[0];
-              XYZ w = triangleCorners[2]
-                - triangleCorners[0];
-              XYZ triangleNormal = v
-                .CrossProduct( w )
-                .Normalize();
-
-              for( int j = 0; j < 3; ++j )
-              {
-                int nFaceVertices = faceVertices.Count;
-
-                Debug.Assert( nFaceVertices.Equals( faceNormals.Count ),
-                  "expected equal number of face vertex and normal coordinates" );
-
-                faceIndices.Add( nFaceVertices / 3 );
-
-                int i3 = triangleIndices[j] * 3;
-
-                // Rotate the X, Y and Z directions, 
-                // since the Z direction points upward 
-                // in Revit as opposed to sideways or
-                // outwards or forwards in WebGL.
-
-                faceVertices.Add( vertexCoordsMm[i3 + 1] );
-                faceVertices.Add( vertexCoordsMm[i3 + 2] );
-                faceVertices.Add( vertexCoordsMm[i3] );
-
-                if( CmdElemGeom.RetainCurvedSurfaceFacets )
-                {
-                  faceNormals.Add( triangleNormal.Y );
-                  faceNormals.Add( triangleNormal.Z );
-                  faceNormals.Add( triangleNormal.X );
-                }
-                else
-                {
-                  UV uv = face.Project(
-                    triangleCorners[j] ).UVPoint;
-
-                  XYZ normal = face.ComputeNormal( uv );
-
-                  faceNormals.Add( normal.Y );
-                  faceNormals.Add( normal.Z );
-                  faceNormals.Add( normal.X );
-                }
-              }
-            }
-          }
+          exporter.Export( view );
 
           // Scale the vertices to a [-1,1] cube 
           // centered around the origin. Translation
           // to the origin was already performed above.
 
-          double scale = 2.0 / Util.FootToMm( Util.MaxCoord( vsize ) );
+          double scale = 2.0 / Util.FootToMm( 
+            Util.MaxCoord( vsize ) );
 
-          string sposition = string.Join( ", ",
-            faceVertices.ConvertAll<string>(
-              i => ( i * scale ).ToString( "0.##" ) ) );
-
-          string snormal = string.Join( ", ",
-            faceNormals.ConvertAll<string>(
-              f => f.ToString( "0.##" ) ) );
-
-          string sindices = string.Join( ", ",
-            faceIndices.ConvertAll<string>(
-              i => i.ToString() ) );
-
-          Debug.Print( "position: [{0}],", sposition );
-          Debug.Print( "normal: [{0}],", snormal );
-          Debug.Print( "indices: [{0}],", sindices );
-
-          //string json_geometry_data = string.Format(
-          //  "{ \"position\": [{0}],\n\"normal\": [{1}], \"indices\": [{2}] }",
-          //  sposition, snormal, sindices );
-
-          string json_geometry_data =
-            "{ \"position\": [" + sposition
-            + "],\n\"normal\": [" + snormal
-            + "],\n\"indices\": [" + sindices
-            + "] }";
-
-          Debug.Print( "json: " + json_geometry_data );
+          string json_geometry_data
+            = CmdElemGeom.GetJsonGeometryData( scale, 
+              context.FaceIndices, context.FaceVertices, 
+              context.FaceNormals );
 
           CmdElemGeom.DisplayWgl( json_geometry_data );
+
         }
+        // Roll back entire operation.
+
+        //tg.Commit();
       }
       return Result.Succeeded;
     }

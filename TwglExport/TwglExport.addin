@@ -1,11 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RevitAddIns>
   <AddIn Type="Command">
-    <Text>TWGL Export</Text>
-    <Description>Export an element to the Tiny WebGL helper Library</Description>
+    <Text>TWGL Export Element Geometry</Text>
+    <Description>Export a selected element's geometry to the NodeWebGL viewer</Description>
     <Assembly>TwglExport.dll</Assembly>
-    <FullClassName>TwglExport.Command</FullClassName>
+    <FullClassName>TwglExport.CmdElemGeom</FullClassName>
     <ClientId>ae85024d-e3cd-4548-8c27-ddcee3f83887</ClientId>
+    <VendorId>TBC_</VendorId>
+    <VendorDescription>The Building Coder, http://thebuildingcoder.typepad.com</VendorDescription>
+  </AddIn>
+  <AddIn Type="Command">
+    <Text>TWGL Export Custom Exporter</Text>
+    <Description>Export a selected element to the NodeWebGL viewer via custom exporter</Description>
+    <Assembly>TwglExport.dll</Assembly>
+    <FullClassName>TwglExport.CmdElemGeom</FullClassName>
+    <ClientId>6ea942cb-3139-42a8-9679-983c2cd39a73</ClientId>
     <VendorId>TBC_</VendorId>
     <VendorDescription>The Building Coder, http://thebuildingcoder.typepad.com</VendorDescription>
   </AddIn>

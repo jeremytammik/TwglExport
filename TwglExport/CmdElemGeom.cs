@@ -26,7 +26,7 @@ namespace TwglExport
     /// Toggle between a local server and
     /// a remote Heroku-hosted one.
     /// </summary>
-    static public bool UseLocalServer = false;
+    static public bool UseLocalServer = true;
 
     /// <summary>
     /// If true, individual curved surface facets are
@@ -36,13 +36,91 @@ namespace TwglExport
     static public bool RetainCurvedSurfaceFacets = false;
 
     /// <summary>
+    /// Generate a JSON string defining the geometry 
+    /// data consisting of face indices, vertices and
+    /// normal vectors.
+    /// </summary>
+    /// <param name="scale">Scaling factor to fit it all into a two-unit cube</param>
+    /// <param name="faceIndices">Face indices</param>
+    /// <param name="faceVertices">Face vertices</param>
+    /// <param name="faceNormals">Face normals</param>
+    /// <returns></returns>
+    static public string GetJsonGeometryData(
+      double scale,
+      List<int> faceIndices,
+      List<int> faceVertices,
+      List<double> faceNormals )
+    {
+      string sposition = string.Join( ", ",
+        faceVertices.ConvertAll<string>(
+          i => ( i * scale ).ToString( "0.##" ) ) );
+
+      string snormal = string.Join( ", ",
+        faceNormals.ConvertAll<string>(
+          f => f.ToString( "0.##" ) ) );
+
+      string sindices = string.Join( ", ",
+        faceIndices.ConvertAll<string>(
+          i => i.ToString() ) );
+
+      Debug.Print( "position: [{0}],", sposition );
+      Debug.Print( "normal: [{0}],", snormal );
+      Debug.Print( "indices: [{0}],", sindices );
+
+      //string json_geometry_data = string.Format(
+      //  "{ \"position\": [{0}],\n\"normal\": [{1}], \"indices\": [{2}] }",
+      //  sposition, snormal, sindices );
+
+      string json_geometry_data =
+        "{ \"position\": [" + sposition
+        + "],\n\"normal\": [" + snormal
+        + "],\n\"indices\": [" + sindices
+        + "] }";
+
+      Debug.Print( "json: " + json_geometry_data );
+
+      return json_geometry_data;
+    }
+
+    static bool EnsureJsModulePresent( string filename )
+    {
+      bool rc = File.Exists( filename );
+      if( !rc )
+      {
+        Util.ErrorMsg( string.Format( 
+          "{0} not found.", filename ) );
+      }
+      return rc;
+    }
+
+    /// <summary>
+    /// Check that the necessary JavaScript support
+    /// modules are present in the specified folder.
+    /// </summary>
+    static bool EnsureJsModulesPresent( string dir )
+    {
+      string [] modules = new string[] {
+        "fs.js",
+        "jquery-1.3.2.min.js",
+        "twgl-full.min.js",
+        "viewer.js",
+        "vs.js" 
+      };
+      return modules.All<string>( s
+        => EnsureJsModulePresent( 
+          Path.Combine( dir, s ) ) );
+    }
+
+    /// <summary>
     /// Invoke the node.js WebGL viewer web server.
     /// Use a local or global base URL and an HTTP POST
     /// request passing the 3D geometry data as body.
     /// </summary>
-    static public void DisplayWgl( 
+    static public bool DisplayWgl( 
       string json_geometry_data )
     {
+      bool rc = false;
+
       string base_url = UseLocalServer
         ? "http://127.0.0.1:5000"
         : "https://nameless-harbor-7576.herokuapp.com";
@@ -82,16 +160,43 @@ namespace TwglExport
         result = reader.ReadToEnd();
       }
 
+      // Get JavaScript modules from server public folder.
+
+      result = result.Replace( "<script src=\"/",
+        "<script src=\"" + base_url + "/" );
+
       string filename = Path.GetTempFileName();
       filename = Path.ChangeExtension( filename, "html" );
 
-      using( StreamWriter writer = File.CreateText( filename ) )
-      {
-        writer.Write( result );
-        writer.Close();
-      }
+      //string dir = Path.GetDirectoryName( filename );
 
-      System.Diagnostics.Process.Start( filename );
+      //// Get JavaScript modules from current directory.
+
+      //string path = dir
+      //  .Replace( Path.GetPathRoot( dir ), "" )
+      //  .Replace( '\\', '/' );
+
+      ////result = result.Replace( "<script src=\"/",
+      ////  "<script src=\"file:///" + dir + "/" ); // XMLHttpRequest cannot load file:///C:/Users/tammikj/AppData/Local/Temp/vs.js. Cross origin requests are only supported for protocol schemes: http, data, chrome, chrome-extension, https, chrome-extension-resource.
+
+      //result = result.Replace( "<script src=\"/", 
+      //  "<script src=\"" );
+
+      //if( EnsureJsModulesPresent( dir ) )
+
+
+      {
+        using( StreamWriter writer = File.CreateText( filename ) )
+        {
+          writer.Write( result );
+          writer.Close();
+        }
+
+        System.Diagnostics.Process.Start( filename );
+
+        rc = true;
+      }
+      return rc;
     }
 
     public Result Execute(
@@ -242,37 +347,20 @@ namespace TwglExport
           // centered around the origin. Translation
           // to the origin was already performed above.
 
-          double scale = 2.0 / Util.FootToMm( Util.MaxCoord( vsize ) );
+          double scale = 2.0 / Util.FootToMm( 
+            Util.MaxCoord( vsize ) );
 
-          string sposition = string.Join( ", ",
-            faceVertices.ConvertAll<string>(
-              i => ( i * scale ).ToString( "0.##" ) ) );
-
-          string snormal = string.Join( ", ",
-            faceNormals.ConvertAll<string>(
-              f => f.ToString( "0.##" ) ) );
-
-          string sindices = string.Join( ", ",
-            faceIndices.ConvertAll<string>(
-              i => i.ToString() ) );
-
-          Debug.Print( "position: [{0}],", sposition );
-          Debug.Print( "normal: [{0}],", snormal );
-          Debug.Print( "indices: [{0}],", sindices );
-
-          //string json_geometry_data = string.Format(
-          //  "{ \"position\": [{0}],\n\"normal\": [{1}], \"indices\": [{2}] }",
-          //  sposition, snormal, sindices );
-
-          string json_geometry_data =
-            "{ \"position\": [" + sposition
-            + "],\n\"normal\": [" + snormal
-            + "],\n\"indices\": [" + sindices
-            + "] }";
-
-          Debug.Print( "json: " + json_geometry_data );
+          string json_geometry_data
+            = GetJsonGeometryData( scale, faceIndices, 
+              faceVertices, faceNormals );
 
           DisplayWgl( json_geometry_data );
+
+          // Ignore other solids in this element.
+          // Please use the custom exporter for 
+          // more complex element geometry.
+
+          break;
         }
       }
       return Result.Succeeded;
