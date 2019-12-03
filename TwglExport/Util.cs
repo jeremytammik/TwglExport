@@ -2,9 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
-using WinForms = System.Windows.Forms;
+using Autodesk.Revit.UI;
 #endregion // Namespaces
 
 namespace TwglExport
@@ -19,10 +18,11 @@ namespace TwglExport
     public static void ErrorMsg( string msg )
     {
       Debug.WriteLine( msg );
-      WinForms.MessageBox.Show( msg,
-        _caption,
-        WinForms.MessageBoxButtons.OK,
-        WinForms.MessageBoxIcon.Error );
+      //WinForms.MessageBox.Show( msg,
+      //  _caption,
+      //  WinForms.MessageBoxButtons.OK,
+      //  WinForms.MessageBoxIcon.Error );
+      TaskDialog.Show( _caption, msg );
     }
 
     /// <summary>
