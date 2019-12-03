@@ -9,6 +9,7 @@
     <VendorId>TBC_</VendorId>
     <VendorDescription>The Building Coder, http://thebuildingcoder.typepad.com</VendorDescription>
   </AddIn>
+  <!--
   <AddIn Type="Command">
     <Text>TWGL Export Custom Exporter</Text>
     <Description>Export a selected element to the NodeWebGL viewer via custom exporter</Description>
@@ -18,4 +19,5 @@
     <VendorId>TBC_</VendorId>
     <VendorDescription>The Building Coder, http://thebuildingcoder.typepad.com</VendorDescription>
   </AddIn>
+  -->
 </RevitAddIns>

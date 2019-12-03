@@ -41,6 +41,7 @@ using System.Runtime.InteropServices;
 // 2015-05-04 2015.0.0.4 implemented a skeleton custom exporter context
 // 2015-05-04 2015.0.0.5 implemented new command to drive custom exporter
 // 2015-05-05 2015.0.0.6 implemented and tested custom exporter, HTML is correctly generated, but HTML viewing of the final result is failing due to CORS policy
+// 2019-12-03 2020.0.0.0 flat migration of element geometry exporter to Revit 2020, commented out custom exporter
 //
-[assembly: AssemblyVersion( "2015.0.0.6" )]
-[assembly: AssemblyFileVersion( "2015.0.0.6" )]
+[assembly: AssemblyVersion( "2020.0.0.0" )]
+[assembly: AssemblyFileVersion( "2020.0.0.0" )]

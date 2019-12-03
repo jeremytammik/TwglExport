@@ -1,3 +1,4 @@
+#if COMPILE_EXPORTER
 #region Namespaces
 using System;
 using System.Collections.Generic;
@@ -118,3 +119,4 @@ namespace TwglExport
     }
   }
 }
+#endif // COMPILE_EXPORTER
